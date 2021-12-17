@@ -19,6 +19,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class projecte_1 {
@@ -379,7 +380,7 @@ public class projecte_1 {
             proveidor[contprov]=rs.getString("codi_prov");
             //ESCRIVIM CAPÇALERA DEL FITXER:
             //creem el fitxer:
-            escritor=escriureCapçaleraComanda(actproveidor);
+            escritor=escriureCapçaleraComanda(rs.getString ("nom"), contprov);
             
             //escrivim linia descriptiva
             do{
@@ -394,10 +395,10 @@ public class projecte_1 {
                     escritor.close();
                     actproveidor=rs.getString("codi_prov");
                     contprod1++;
-                    escritor=escriureCapçaleraComanda(actproveidor);
+                    escritor=escriureCapçaleraComanda(rs.getString("nom"), contprov);
                 }
                
-                escritor.println(rs.getString("codi_prod")+"            "+rs.getString("marca")+"           "+rs.getString("nom")+"            "+(MAXSTOCK - rs.getInt("estoc")));
+                escritor.println(rs.getInt("codi_prod")+"            "+rs.getString("marca")+"           "+rs.getString("nom")+"            "+(MAXSTOCK - rs.getInt("estoc")));
                 contprod1++;
             } while (rs.next());
             contprod[contprov]=contprod1;
@@ -414,11 +415,11 @@ public class projecte_1 {
                 
     }
     
-    static PrintWriter escriureCapçaleraComanda(String codi_prov) throws IOException{
+    static PrintWriter escriureCapçaleraComanda(String nom, int codi_prov) throws IOException{
         FileWriter fw=null;
         BufferedWriter bf=null;
         PrintWriter escritor=null;
-        fw = new FileWriter ("files2/comandes" + codi_prov + "_" + ".txt", false);
+        fw = new FileWriter ("files2/comandes/" + nom + "_" + LocalDate.now() + ".txt", false);
         bf = new BufferedWriter(fw);
         escritor = new PrintWriter(bf);
         //escrivim dades empresa
@@ -432,6 +433,7 @@ public class projecte_1 {
         escritor.println("Correu: electro@gmail.com");
         escritor.println("____________________________________");
         escritor.println("Codi         Marca           Proveïdor            Unitats");
+        proveidor[codi_prov]=nom;
         
         //escrivim linia descriptiva
         return escritor;

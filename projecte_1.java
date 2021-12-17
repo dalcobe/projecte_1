@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class projecte_1 {
+    static String[] proveidor = new String[100];
+    static int[] contprod= new int[100];
     static final int MAXSTOCK=400;
 
     static Connection connectarBD = null;
@@ -67,209 +69,8 @@ public class projecte_1 {
         } while (!sortir);
         desconnexioBD();
     }
-
-    static void actualitzarStocks() throws FileNotFoundException, IOException, SQLException {
-        System.out.println("Actualitzar Stock");
-        //Scanner teclat = new Scanner(System.in);
-
-        /*String actualitza = "Update productes SET estoc = ? WHERE codi_prod = ?";
-        System.out.println("Codi_prod:");
-        int codi_prod = teclat.nextInt();
-        teclat.nextLine();
-        System.out.println("Estoc");
-        int estoc = teclat.nextInt();
-        PreparedStatement sentencia = null;
-        try {
-            sentencia = connectarBD.prepareStatement(actualitza);
-            sentencia.setInt(2, codi_prod);
-            sentencia.setInt(1, estoc);
-            sentencia.executeUpdate();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-        } finally {
-            if (sentencia != null) {
-                try {
-                    sentencia.close();
-                } catch (SQLException sqle) {
-                    sqle.printStackTrace();
-                }
-            }
-        }*/
-
-        File fitxers = new File("files2/ENTRADES PENDENTS");
-
-        if (fitxers.isDirectory()) {
-            File[] fitxers1 = fitxers.listFiles();
-
-            for (int i = 0; i < fitxers1.length; i++) {
-                System.out.println(fitxers1[i].getName());
-                actualitzarFitxers(fitxers1[i]);
-                moureFixterAENTRADESPROCESSADES(fitxers1[i]);
-            }
-
-        }
-        File fitxer3 = new File("files2/ENTRADES PROCESSADES");
-
-    }
-
-    static void moureFixterAENTRADESPROCESSADES(File fitxer) throws FileNotFoundException, IOException {
-
-        FileSystem sistemaFitxers = FileSystems.getDefault();
-        Path origen = sistemaFitxers.getPath("files2/ENTRADES PENDENTS/" + fitxer.getName());
-        Path desti = sistemaFitxers.getPath("files2/ENTRADES PENDENTS/" + fitxer.getName());
-
-        Files.move(origen, desti, StandardCopyOption.REPLACE_EXISTING);
-        System.out.println("S'ha mogut a PROCESSADES el fitxer: " + fitxer.getName());
-
-    }
-
-    static void actualitzarFitxers(File fitxer) throws FileNotFoundException, IOException, SQLException {
-        FileReader reader = new FileReader(fitxer);
-        BufferedReader buffer = new BufferedReader(reader);
-
-        String linea;
-        while ((linea = buffer.readLine()) != null) {
-            System.out.println(linea);
-            int posSep = linea.indexOf(":");
-            int codi_prod = Integer.parseInt(linea.substring(0, posSep));
-            System.out.println("El codi del producte es: " + codi_prod);
-            int estoc = Integer.parseInt(linea.substring(posSep + 1));
-            System.out.println("El numero de unitats es: " + estoc);
-            actualitzaBD(codi_prod, estoc);
-
-        }
-        buffer.close();
-        reader.close();
-    }
-
-    static void actualitzaBD(int codi_prod, int estoc) throws SQLException {
-
-        int codi_prod2 = codi_prod;
-
-        String actualitza = "UPDATE productes SET estoc = estoc + ? WHERE codi_prod = ?";
-        PreparedStatement sentencia = null;
-
-        try {
-            sentencia = connectarBD.prepareStatement(actualitza);
-            sentencia.setInt(1, estoc);
-            sentencia.setInt(2, codi_prod2);
-            sentencia.executeUpdate();
-            System.out.println("S'han afegit " + estoc + " unitats al producte: " + codi_prod);
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            System.out.println("*Hi ha hagut un error al actualitzar stock*");
-        } finally {
-            if (sentencia != null)
-                try {
-                    sentencia.close();
-                } catch (SQLException sqle) {
-                    sqle.printStackTrace();
-                }
-        }
-    }
     
-        /*FileReader reader = new FileReader(fitxer);
-        BufferedReader buffer = new BufferedReader(reader);
-        String linea;
-        while ((linea = buffer.readLine()) != null) {
-            System.out.println(linea);
-            String LIMITADOR = ":";
-            int posLimit = linea.indexOf(LIMITADOR);
-            String codi_prod = linea.substring(0, posLimit);
-            int entradaStock = Integer.parseInt(linea.substring(posLimit + 1));
-            System.out.println("codi_prod: " + codi_prod + " entradaStock: " + entradaStock);
-        }
-
-        buffer.close();
-        reader.close();
-
-    }*/
-
-    /*static void generarComanda() throws SQLException {
-         System.out.println("Generar comanda");
-        String consulta = "SELECT P. model, P.estoc, R.nom, R.codi_prov from productes P, proveïdors R where P.estoc<=20 order by R.nom;";
-        PreparedStatement ps = connectarBD.prepareStatement(consulta);
-        ResultSet rs = ps.executeQuery();
-
-        String proveidorAnt = "";
-        while (rs.next()) {
-            if (!proveidorAnt.equals(rs.getString("nom"))) {
-                proveidorAnt = rs.getString("nom");
-            }
-            System.out.println("canvi de proveidor: " + rs.getString("nom"));
-            System.out.print("model: " + rs.getString("model"));
-            System.out.print(" estoc: " + rs.getInt("estoc"));
-            System.out.print(" codi_prov: " + rs.getInt("codi_prov"));
-            System.out.println(" nom: " + rs.getString("nom"));
-
-        }
-       
-    }*/
-        
-
-    
-    static void generarcomandav2() throws SQLException, IOException {
-        System.out.println("Generar comanda");
-        FileWriter fw=null;
-        BufferedWriter bf=null;
-        PrintWriter escritor=null;
-        
-        String consulta = "SELECT P. model,P.codi_prod, P.estoc, P.marca, R.nom, R.codi_prov from productes P, proveïdors R where P.estoc<=20 order by R.nom;";
-        PreparedStatement ps = connectarBD.prepareStatement(consulta);
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()){
-            String actproveidor=rs.getString("R.codi_prov");
-            //ESCRIVIM CAPÇALERA DEL FITXER:
-            //creem el fitxer:
-            escritor=escriureCapçaleraComanda(actproveidor);
-            
-            //escrivim linia descriptiva
-            do{
-                //comprovem si el proveidor ha canviat
-                if (actproveidor!=rs.getString("codi_prov")){
-                    //ha canviat el proveidor
-                    //hem guardo el nou proveidor
-                    escritor.close();
-                    actproveidor=rs.getString("codi_prov");               
-                    escritor=escriureCapçaleraComanda(actproveidor);
-                }
-               
-                escritor.println(rs.getString("codi_prod")+"            "+rs.getString("marca")+"           "+(MAXSTOCK - rs.getInt("estoc")));
-            } while (rs.next());           
-            escritor.close();
-
-            
-}
-    }
-    
-    static PrintWriter escriureCapçaleraComanda(String codi_prov) throws IOException{
-        FileWriter fw=null;
-        BufferedWriter bf=null;
-        PrintWriter escritor=null;
-        fw = new FileWriter ("files2/comandes/comanda1.txt", false);
-        bf = new BufferedWriter(fw);
-        escritor = new PrintWriter(bf);
-        //escrivim dades empresa
-        escritor.println("^^^^^Electroimp^^^^^");
-        escritor.println("Data pedit: 31/10/2021");
-        escritor.println("Codi del pedit: 9706665");
-        escritor.println("Direcció: Avinguda Catalunya, 25300");
-        escritor.println("____________________________________");
-        escritor.println("Codi client: 245710");
-        escritor.println("Telèfon: 973537843");
-        escritor.println("Correu: electro@gmail.com");
-        escritor.println("____________________________________");
-        escritor.println("Codi         Marca           Unitats");
-        //escrivim linia descriptiva
-        return escritor;
-        
-    }
-    
-    static void consultarComandes() {
-        System.out.println("Consultar comanda");
-    }
-
-    static void gestioProductes() throws SQLException {
+     static void gestioProductes() throws SQLException {
         Scanner teclat = new Scanner(System.in);
         boolean enrere = false;
         do {
@@ -422,6 +223,279 @@ public class projecte_1 {
             }
         }
     }
+
+
+    static void actualitzarStocks() throws FileNotFoundException, IOException, SQLException {
+        System.out.println("Actualitzar Stock");
+        /*Scanner teclat = new Scanner(System.in);
+
+        String actualitza = "Update productes SET estoc = estoc + ? WHERE codi_prod = ?";
+        System.out.println("Codi_prod:");
+        int codi_prod = teclat.nextInt();
+        teclat.nextLine();
+        System.out.println("Estoc");
+        int estoc = teclat.nextInt();
+        PreparedStatement sentencia = null;
+        try {
+            sentencia = connectarBD.prepareStatement(actualitza);
+            sentencia.setInt(2, codi_prod);
+            sentencia.setInt(1, estoc);
+            sentencia.executeUpdate();
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        } finally {
+            if (sentencia != null) {
+                try {
+                    sentencia.close();
+                } catch (SQLException sqle) {
+                    sqle.printStackTrace();
+                }
+            }
+        }*/
+
+        File fitxers = new File("files2/ENTRADES PENDENTS");
+
+        if (fitxers.isDirectory()) {
+            File[] fitxers1 = fitxers.listFiles();
+
+            for (int i = 0; i < fitxers1.length; i++) {
+                System.out.println(fitxers1[i].getName());
+                actualitzarFitxers(fitxers1[i]);
+                moureFixterAENTRADESPROCESSADES(fitxers1[i]);
+            }
+
+        }
+        File fitxer3 = new File("files2/ENTRADES PROCESSADES");
+
+    }
+
+    static void moureFixterAENTRADESPROCESSADES(File fitxer) throws FileNotFoundException, IOException {
+
+        FileSystem sistemaFitxers = FileSystems.getDefault();
+        Path origen = sistemaFitxers.getPath("files2/ENTRADES PENDENTS/" + fitxer.getName());
+        Path desti = sistemaFitxers.getPath("files2/ENTRADES PROCESSADES/" + fitxer.getName());
+
+        Files.move(origen, desti, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("S'ha mogut a PROCESSADES el fitxer: " + fitxer.getName());
+
+    }
+
+    static void actualitzarFitxers(File fitxer) throws FileNotFoundException, IOException, SQLException {
+        FileReader reader = new FileReader(fitxer);
+        BufferedReader buffer = new BufferedReader(reader);
+
+        String linea;
+        while ((linea = buffer.readLine()) != null) {
+            System.out.println(linea);
+            int posSep = linea.indexOf(":");
+            int codi_prod = Integer.parseInt(linea.substring(0, posSep));
+            System.out.println("El codi del producte es: " + codi_prod);
+            int estoc = Integer.parseInt(linea.substring(posSep + 1));
+            System.out.println("El numero de unitats es: " + estoc);
+            actualitzaBD(codi_prod, estoc);
+
+        }
+        buffer.close();
+        reader.close();
+    }
+
+    static void actualitzaBD(int codi_prod, int estoc) throws SQLException {
+
+        int codi_prod2 = codi_prod;
+
+        String actualitza = "UPDATE productes SET estoc = estoc + ? WHERE codi_prod = ?";
+        PreparedStatement sentencia = null;
+
+        try {
+            sentencia = connectarBD.prepareStatement(actualitza);
+            sentencia.setInt(1, estoc);
+            sentencia.setInt(2, codi_prod2);
+            sentencia.executeUpdate();
+            System.out.println("S'han afegit " + estoc + " unitats al producte: " + codi_prod);
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+            System.out.println("Hi ha hagut un error al actualitzar el stock");
+        } finally {
+            if (sentencia != null)
+                try {
+                    sentencia.close();
+                } catch (SQLException sqle) {
+                    sqle.printStackTrace();
+                }
+        }
+    }
+    
+        /*FileReader reader = new FileReader(fitxer);
+        BufferedReader buffer = new BufferedReader(reader);
+        String linea;
+        while ((linea = buffer.readLine()) != null) {
+            System.out.println(linea);
+            String LIMITADOR = ":";
+            int posLimit = linea.indexOf(LIMITADOR);
+            String codi_prod = linea.substring(0, posLimit);
+            int entradaStock = Integer.parseInt(linea.substring(posLimit + 1));
+            System.out.println("codi_prod: " + codi_prod + " entradaStock: " + entradaStock);
+        }
+
+        buffer.close();
+        reader.close();
+
+    }*/
+
+    /*static void generarComanda() throws SQLException {
+         System.out.println("Generar comanda");
+        String consulta = "SELECT P. model, P.estoc, R.nom, R.codi_prov from productes P, proveïdors R where P.estoc<=20 order by R.nom;";
+        PreparedStatement ps = connectarBD.prepareStatement(consulta);
+        ResultSet rs = ps.executeQuery();
+
+        String proveidorAnt = "";
+        while (rs.next()) {
+            if (!proveidorAnt.equals(rs.getString("nom"))) {
+                proveidorAnt = rs.getString("nom");
+            }
+            System.out.println("canvi de proveidor: " + rs.getString("nom"));
+            System.out.print("model: " + rs.getString("model"));
+            System.out.print(" estoc: " + rs.getInt("estoc"));
+            System.out.print(" codi_prov: " + rs.getInt("codi_prov"));
+            System.out.println(" nom: " + rs.getString("nom"));
+
+        }
+       
+    }*/
+        
+
+    
+    static void generarcomandav2() throws SQLException, IOException {
+        System.out.println("Generar comanda");
+        int contprov=0;
+        int contprod1=0;
+        PrintWriter escritor=null;
+        
+        String consulta = "SELECT P. model,P.codi_prod, P.estoc, P.marca, R.nom, R.codi_prov, R. nom from productes P, proveïdors R where P.estoc<=20 order by R.nom;";
+        PreparedStatement ps = connectarBD.prepareStatement(consulta);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()){
+            String actproveidor=rs.getString("R.codi_prov");
+            proveidor[contprov]=rs.getString("codi_prov");
+            //ESCRIVIM CAPÇALERA DEL FITXER:
+            //creem el fitxer:
+            escritor=escriureCapçaleraComanda(actproveidor);
+            
+            //escrivim linia descriptiva
+            do{
+                //comprovem si el proveidor ha canviat
+                if (!actproveidor.equals(rs.getString("codi_prov"))){
+                    contprod[contprov]=contprod1;
+                    contprod1=0;
+                    contprov++;
+                    proveidor[contprov]=rs.getString("codi_prov");
+                    //ha canviat el proveidor
+                    //hem guardo el nou proveidor
+                    escritor.close();
+                    actproveidor=rs.getString("codi_prov");
+                    contprod1++;
+                    escritor=escriureCapçaleraComanda(actproveidor);
+                }
+               
+                escritor.println(rs.getString("codi_prod")+"            "+rs.getString("marca")+"           "+rs.getString("nom")+"            "+(MAXSTOCK - rs.getInt("estoc")));
+                contprod1++;
+            } while (rs.next());
+            contprod[contprov]=contprod1;
+            escritor.close();
+
+            
+}
+    }
+    
+    static void comanda(){
+        for(int i=0;i<contprod.length;i++){
+            System.out.println(contprod[i] + proveidor[i]);
+        }
+                
+    }
+    
+    static PrintWriter escriureCapçaleraComanda(String codi_prov) throws IOException{
+        FileWriter fw=null;
+        BufferedWriter bf=null;
+        PrintWriter escritor=null;
+        fw = new FileWriter ("files2/comandes" + codi_prov + "_" + ".txt", false);
+        bf = new BufferedWriter(fw);
+        escritor = new PrintWriter(bf);
+        //escrivim dades empresa
+        escritor.println("^^^^^Electroimp^^^^^");
+        escritor.println("Data pedit: 31/10/2021");
+        escritor.println("Codi del pedit: 9706665");
+        escritor.println("Direcció: Avinguda Catalunya, 25300");
+        escritor.println("____________________________________");
+        escritor.println("Codi client: 245710");
+        escritor.println("Telèfon: 973537843");
+        escritor.println("Correu: electro@gmail.com");
+        escritor.println("____________________________________");
+        escritor.println("Codi         Marca           Proveïdor            Unitats");
+        
+        //escrivim linia descriptiva
+        return escritor;
+        
+    }
+    
+    static void consultarComandes() {
+        llistatProductes();
+        maxim();
+        minim();
+        mitjana();
+
+    }
+
+    static void llistatProductes() {
+        System.out.println("Llistat de Productes demanats");
+        for (int i = 0; contprod[i] != 0; i++) {
+            System.out.println(proveidor[i] + ": " + contprod[i]);
+        }
+    }
+
+    static void maxim() {
+        System.out.println("\nProveidor mes sol·licitat");
+        int max = contprod[0];
+        int imax = 0;
+
+        for (int i = 0; i < contprod.length; i++) {
+            if (contprod[i] > max) {
+                max = contprod[i];
+                imax = i;
+            }
+        }
+        System.out.println(proveidor[imax] + " se sol·liciten : " + max);
+
+    }
+
+    static void minim() {
+        System.out.println("\nProveidor menys sol·licitat");
+        int min = contprod[0];
+        int imin = 0;
+
+        for (int i = 0; contprod[i] != 0; i++) {
+            if (contprod[i] < min) {
+                min = contprod[i];
+                imin = i;
+            }
+        }
+        System.out.println(proveidor[imin] + " se sol·liciten : " + min);
+    }
+
+    static void mitjana() {
+        System.out.println("\nMitjana de productes sol·licitats");
+
+        double mitjana = 0, suma = 0;
+        int i;
+        for ( i= 0; contprod[i] !=0; i++) {
+            suma += contprod[i];
+
+        }
+        mitjana = suma / i;
+        System.out.println("La mitjana es " + mitjana + "\n");
+
+    }
+
 
     static void connectarBD() {
 
